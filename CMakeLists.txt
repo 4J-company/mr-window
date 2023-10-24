@@ -55,7 +55,7 @@ if(XWIN_API STREQUAL "AUTO")
     elseif (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin")
     set(XWIN_API "COCOA" CACHE STRING "A more specific platform selector to choose from, choose the exact OS protocol to use, can be WIN32, UWP, COCOA, UIKIT, XCB, XLIB, MIR, WAYLAND, ANDROID, WASM, NOOP." FORCE)
     elseif (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
-    set(XWIN_API "XLIB" CACHE STRING "A more specific platform selector to choose from, choose the exact OS protocol to use, can be WIN32, UWP, COCOA, UIKIT, XCB, XLIB, MIR, WAYLAND, ANDROID, WASM, NOOP." FORCE)
+    set(XWIN_API "XCB" CACHE STRING "A more specific platform selector to choose from, choose the exact OS protocol to use, can be WIN32, UWP, COCOA, UIKIT, XCB, XLIB, MIR, WAYLAND, ANDROID, WASM, NOOP." FORCE)
     endif()
 endif()
 
