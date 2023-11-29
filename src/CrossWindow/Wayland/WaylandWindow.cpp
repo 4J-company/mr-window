@@ -5,7 +5,9 @@
 
 namespace xwin
 {
-Window::Window() { create(); }
+Window::Window() {
+  create(mDesc, mEventQueue);
+}
 
 Window::~Window() { close(); }
 
@@ -24,10 +26,30 @@ void Window::trackEventsAsync(
 // events (resizing while rendering, etc.)
 void Window::executeEventCallback(const xwin::Event e)
 {
-    if (mCallback) mCallback(e);
+  if (mCallback) {
+    mCallback(e);
+  }
 }
 
-bool Window::create(const WindowDesc& desc, EventQueue& eventQueue) {}
+bool Window::create(const WindowDesc& desc, EventQueue& eventQueue) {
+  const XWinState &xwinState = getXWinState();
 
-bool Window::close() {}
+  surface = wl_compositor_create_surface(xwinState.compositor);
+  if (surface == nullptr) {
+    return false;
+  }
+
+  shell_surface = wl_shell_get_shell_surface(shell, surface);
+  if (shell_surface == nullptr) {
+    return false;
+  }
+
+  wl_shell_surface_set_toplevel(shell_surface);
+  wl_shell_surface_set_title(shell_surface, mDesc.title.c_str());
+
+  return true;
+}
+
+void Window::close() {
+}
 }

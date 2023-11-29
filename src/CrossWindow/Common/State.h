@@ -55,8 +55,6 @@ struct XWinState
     struct wl_display* display;
     struct wl_registry* registry;
     struct wl_compositor* compositor;
-    struct wl_surface* surface;
-    struct wl_list* monitors;
 
     XWinState(int argc, const char** argv, struct wl_display* display)
         : argc(argc), argv(argv), display(display)

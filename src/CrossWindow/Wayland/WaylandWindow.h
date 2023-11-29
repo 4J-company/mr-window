@@ -4,6 +4,8 @@
 #include "../Common/Init.h"
 #include "../Common/WindowDesc.h"
 
+#include <functional>
+
 namespace xwin
 {
 class Window
@@ -29,19 +31,20 @@ class Window
     // Get window description
     const WindowDesc getDesc();
 
-  protected:
-    // Pointer to this window's event queue
-    EventQueue* mEventQueue = nullptr;
-
+  public:
     // Executes an event callback asynchronously, use this for non-blocking
     // events (resizing while rendering, etc.)
     void executeEventCallback(const xwin::Event e);
 
     std::function<void(const xwin::Event e)> mCallback;
 
+    struct wl_surface* surface;
+    struct wl_shell* shell;
+    struct wl_shell_surface *shell_surface;
+
     // Window description
     WindowDesc mDesc;
-
-  public:
+    // Window's event queue
+    EventQueue mEventQueue;
 };
 }

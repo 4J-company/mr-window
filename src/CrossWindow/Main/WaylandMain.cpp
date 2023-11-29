@@ -16,14 +16,14 @@ int main(int argc, const char** argv)
         nullptr, nullptr // callbacks
     };
     struct wl_compositor* compositor;
+
     wl_registry_add_listener(registry, &registry_listener, &compositor);
     wl_display_roundtrip(display);
-    wl_registry_destroy(registry);
 
     xwin::init(argc, argv, display);
-
     xmain(argc, argv);
 
+    wl_registry_destroy(registry);
     wl_compositor_destroy(compositor);
     wl_display_disconnect(display);
 
