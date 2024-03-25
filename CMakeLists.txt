@@ -36,7 +36,21 @@ function(deduce_linux_display_server)
   elseif ("$ENV{XDG_SESSION_TYPE}" STREQUAL "x11")
     set(XWIN_API "XCB" PARENT_SCOPE)
   elseif ("$ENV{XDG_SESSION_TYPE}" STREQUAL "")
-    message(SEND_ERROR "No linux display server detected")
+    execute_process (
+      COMMAND bash -c "env | awk -F= '$2 ~ /wayland/ {count++} END {print count}'"
+      OUTPUT_VARIABLE WaylandCount
+      )
+    execute_process (
+      COMMAND bash -c "env | awk -F= '$2 ~ /x11/ {count++} END {print count}'"
+      OUTPUT_VARIABLE X11Count
+      )
+    if (${X11Count} LESS ${WaylandCount})
+      set(XWIN_API "WAYLAND" PARENT_SCOPE)
+    elseif (${X11Count} GREATER 0)
+      set(XWIN_API "XCB" PARENT_SCOPE)
+    else ()
+      message(SEND_ERROR "No linux display server detected")
+    endif()
   else ()
     message(SEND_ERROR "Detected $ENV{XDG_SESSION_TYPE}; Supported libraries: XCB, XLIB, MIR*, WAYLAND")
   endif()
