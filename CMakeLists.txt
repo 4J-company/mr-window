@@ -30,6 +30,7 @@ set_property(
 )
 
 function(deduce_linux_display_server)
+  message( STATUS "XDG session type: " $ENV{XDG_SESSION_TYPE} )
   if ($ENV{XDG_SESSION_TYPE} STREQUAL "wayland")
     set(XWIN_API "WAYLAND" PARENT_SCOPE)
   elseif ($ENV{XDG_SESSION_TYPE} STREQUAL "x11")
