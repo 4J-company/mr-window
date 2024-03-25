@@ -44,6 +44,7 @@ function(deduce_linux_display_server)
       COMMAND bash -c "env | awk -F= '$2 ~ /x11/ {count++} END {print count}'"
       OUTPUT_VARIABLE X11Count
       )
+    message(STATUS "Display server counts: " ${X11Count} " " ${WaylandCount})
     if (${X11Count} LESS ${WaylandCount})
       set(XWIN_API "WAYLAND" PARENT_SCOPE)
     elseif (${X11Count} GREATER 0)
