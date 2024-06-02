@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 cmake_policy(VERSION 3.18)
+project(CrossWindow)
 enable_language(C)
 enable_language(CXX)
 
@@ -147,57 +148,7 @@ set(XMAIN_SOURCES ${MAIN_SOURCES} CACHE STRING "Global Variable - The source fil
 
 # =============================================================
 
-# CrossWindow Functions
-function(xwin_setup versionMajor versionMinor versionPatch versionRevision companyName iconPath)
-    # @TODO - implement
-    message("Warning: xwin_setup has not yet been implemented.")
-endfunction()
-
-function(xwin_add_executable targetProject targetSources)
-    message("Creating CrossWindow executable:")
-
-    foreach(source IN LISTS XMAIN_SOURCES)
-        source_group("" FILES "${source}")
-    endforeach()
-    set(XWIN_FILES "${XMAIN_SOURCES}" "${targetSources}")
-
-    if(XWIN_API STREQUAL "WIN32" OR XWIN_API STREQUAL "UWP")
-        add_executable(
-            ${targetProject}
-            WIN32
-            "${XWIN_FILES}"
-        )
-    elseif(XWIN_API STREQUAL "COCOA" OR XWIN_API STREQUAL "UIKIT")
-        add_executable(
-            ${targetProject}
-            MACOSX_BUNDLE
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "XCB" OR XWIN_API STREQUAL "XLIB")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "ANDROID")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "WASM")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "NOOP")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    endif()
-
-    target_compile_definitions(${targetProject} PRIVATE XWIN_${XWIN_API}=1)
-
-endfunction()
+set(XWIN_DEFINITIONS XWIN_${XWIN_API}=1 CACHE STRING "Global Variable - The compile definitions for the currently active protocol.")
 
 # =============================================================
 
