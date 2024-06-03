@@ -1,4 +1,3 @@
-#
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 cmake_policy(VERSION 3.18)
 project(CrossWindow)
@@ -30,14 +29,26 @@ set_property(
 )
 
 function(deduce_linux_display_server)
-  if ($ENV{XDG_SESSION_TYPE} STREQUAL "wayland")
+  message( STATUS "XDG session type: " "$ENV{XDG_SESSION_TYPE}" )
+  if ("$ENV{XDG_SESSION_TYPE}" STREQUAL "wayland")
     set(XWIN_API "WAYLAND" PARENT_SCOPE)
-  elseif ($ENV{XDG_SESSION_TYPE} STREQUAL "x11")
+  elseif ("$ENV{XDG_SESSION_TYPE}" STREQUAL "x11")
     set(XWIN_API "XCB" PARENT_SCOPE)
-  elseif ($ENV{XDG_SESSION_TYPE} STREQUAL "")
-    message(SEND_ERROR "No linux display server detected")
-  else ()
-    message(SEND_ERROR "Detected $ENV{XDG_SESSION_TYPE}; Supported libraries: XCB, XLIB, MIR*, WAYLAND")
+  else()
+    execute_process (
+      COMMAND bash -c "env | awk -F= '$2 ~ /wayland/ {count++} END {print count}'"
+      OUTPUT_VARIABLE WaylandCount
+      )
+    execute_process (
+      COMMAND bash -c "env | awk -F= '$2 ~ /x11/ {count++} END {print count}'"
+      OUTPUT_VARIABLE X11Count
+      )
+    message(STATUS "Display server counts: " ${X11Count} " " ${WaylandCount})
+    if (${X11Count} LESS ${WaylandCount})
+      set(XWIN_API "WAYLAND" PARENT_SCOPE)
+    else()
+      set(XWIN_API "XCB" PARENT_SCOPE)
+    endif()
   endif()
 endfunction()
 
@@ -96,7 +107,7 @@ elseif(XWIN_API STREQUAL "WASM")
 elseif(XWIN_API STREQUAL "NOOP")
     set(XWIN_API_PATH "Noop")
 else()
-  message( SEND_ERROR "Detected: ${XWIN_API}; XWIN_API can only be either AUTO, NOOP, WIN32, UWP, COCOA, UIKIT, XCB, XLIB, MIR, WAYLAND, ANDROID, or WASM.")
+    message( SEND_ERROR "Detected: ${XWIN_API}; XWIN_API can only be either AUTO, NOOP, WIN32, UWP, COCOA, UIKIT, XCB, XLIB, MIR, WAYLAND, ANDROID, or WASM.")
 endif()
 
 message( STATUS "Building CrossWindow for " ${XWIN_API_PATH} )
@@ -137,57 +148,7 @@ set(XMAIN_SOURCES ${MAIN_SOURCES} CACHE STRING "Global Variable - The source fil
 
 # =============================================================
 
-# CrossWindow Functions
-function(xwin_setup versionMajor versionMinor versionPatch versionRevision companyName iconPath)
-    # @TODO - implement
-    message("Warning: xwin_setup has not yet been implemented.")
-endfunction()
-
-function(xwin_add_executable targetProject targetSources)
-    message("Creating CrossWindow executable:")
-
-    foreach(source IN LISTS XMAIN_SOURCES)
-        source_group("" FILES "${source}")
-    endforeach()
-    set(XWIN_FILES "${XMAIN_SOURCES}" "${targetSources}")
-
-    if(XWIN_API STREQUAL "WIN32" OR XWIN_API STREQUAL "UWP")
-        add_executable(
-            ${targetProject}
-            WIN32
-            "${XWIN_FILES}"
-        )
-    elseif(XWIN_API STREQUAL "COCOA" OR XWIN_API STREQUAL "UIKIT")
-        add_executable(
-            ${targetProject}
-            MACOSX_BUNDLE
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "XCB" OR XWIN_API STREQUAL "XLIB")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "ANDROID")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "WASM")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    elseif(XWIN_API STREQUAL "NOOP")
-        add_executable(
-            ${targetProject}
-            ${XWIN_FILES}
-        )
-    endif()
-
-    target_compile_definitions(${targetProject} PRIVATE XWIN_${XWIN_API}=1)
-
-endfunction()
+set(XWIN_DEFINITIONS XWIN_${XWIN_API}=1 CACHE STRING "Global Variable - The compile definitions for the currently active protocol.")
 
 # =============================================================
 
@@ -248,22 +209,22 @@ elseif(XWIN_API STREQUAL "XLIB")
         target_include_directories(${PROJECT_NAME} PUBLIC ${X11_INCLUDE_DIR})
     endif()
 elseif(XWIN_API STREQUAL "WAYLAND")
-  find_package(Wayland REQUIRED)
-  if(Wayland_FOUND)
+    find_package(Wayland REQUIRED)
+    if(Wayland_FOUND)
         message("Found Wayland Libraries.")
         message("Wayland includes = ${Wayland_INCLUDE_DIRS}")
         message("Wayland Libraries = ${Wayland_LIBRARIES}")
         target_link_libraries(${PROJECT_NAME} ${Wayland_LIBRARIES})
         target_include_directories(${PROJECT_NAME} PUBLIC ${Wayland_INCLUDE_DIRS})
-  endif()
+    endif()
 elseif(XWIN_API STREQUAL "XCB")
     find_package(X11 REQUIRED)
     if(X11_FOUND)
-      message("Found XCB Libraries.")
-      message("XCB Include Path = ${X11_xcb_INCLUDE_PATH}")
-      message("XCB Lib = ${X11_xcb_LIB}")
-      target_link_libraries(${PROJECT_NAME} ${X11_xcb_LIB})
-      target_include_directories(${PROJECT_NAME} PUBLIC ${X11_xcb_INCLUDE_PATH})
+        message("Found XCB Libraries.")
+        message("XCB Include Path = ${X11_xcb_INCLUDE_PATH}")
+        message("XCB Lib = ${X11_xcb_LIB}")
+        target_link_libraries(${PROJECT_NAME} ${X11_xcb_LIB})
+        target_include_directories(${PROJECT_NAME} PUBLIC ${X11_xcb_INCLUDE_PATH})
     endif()
 endif()
 # =============================================================
